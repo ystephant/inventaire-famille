@@ -64,6 +64,7 @@ export default function InventaireJeux() {
   const [authenticated, setAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const isSavingRef = useRef(false);
 
   // 📸 Upload vers Cloudinary
   const uploadToCloudinary = async (file, folder = 'boardgames') => {
@@ -152,20 +153,18 @@ export default function InventaireJeux() {
     autoLogin();
   }, []);
   
-// 1️⃣ Chargement initial + Synchronisation temps réel
+// 2️⃣ Synchronisation temps réel
   useEffect(() => {
-    if (!authenticated) return;
-    
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode !== null) setDarkMode(savedDarkMode === 'true');
-    loadGames();
-    loadEvaluations();
-
     const channel = supabase
       .channel('games-realtime')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'games' }, 
         async (payload) => {
+          // ✅ Ignorer les mises à jour si on est en train de sauvegarder
+          if (isSavingRef.current) {
+            return;
+          }
+          
           if (payload.eventType === 'UPDATE' && payload.new) {
             setAllGames(prev => prev.map(game => game.id === payload.new.id ? payload.new : game));
             setSelectedGame(prev => {
@@ -191,7 +190,7 @@ export default function InventaireJeux() {
     return () => {
       supabase.removeChannel(channel).catch(() => {});
     };
-  }, [authenticated]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode.toString());
@@ -444,6 +443,9 @@ const getAggregatedItems = () => {
     }
     
     setCheckedItems(newCheckedItems);
+    
+    isSavingRef.current = true; // ← Marquer qu'on sauvegarde
+    
     try {
       const { error } = await supabase.from('games').update({ checked_items: newCheckedItems }).eq('id', selectedGame.id);
       if (error) throw error;
@@ -451,6 +453,11 @@ const getAggregatedItems = () => {
       setTimeout(() => setSyncStatus(''), 1500);
     } catch (error) {
       console.error('Erreur sauvegarde:', error);
+    } finally {
+      // Attendre 500ms avant de réactiver la synchro
+      setTimeout(() => {
+        isSavingRef.current = false;
+      }, 500);
     }
   };
 
