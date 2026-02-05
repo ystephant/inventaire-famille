@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Search, RotateCcw, Dices, AlertCircle, Plus, Edit, Check, X, Trash2, Grid, Home, List, ArrowLeft } from 'lucide-react';
+import { Camera, Search, RotateCcw, Package, AlertCircle, Plus, Edit, Check, X, Trash2, Grid, Home, List, ArrowLeft } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
 // 🔗 Connexion Supabase
@@ -24,7 +24,7 @@ const CLOUDINARY_UPLOAD_PRESET = 'boardgames_upload';
 // 🎨 Composant principal
 export default function InventaireJeux() {
   // States
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [username] = useState('demo_user');
   const [loading, setLoading] = useState(false);
   
@@ -190,25 +190,12 @@ export default function InventaireJeux() {
         }
       )
       .subscribe();
-    return () => {
-  if (channel) {
-    supabase.removeChannel(channel).catch(() => {});
-  }
-};
+    return () => supabase.removeChannel(channel);
   }, []);
 
   useEffect(() => {
-  // Charger le thème depuis localStorage
-  const savedTheme = localStorage.getItem('darkMode');
-  if (savedTheme !== null) {
-    setDarkMode(savedTheme === 'true');
-  } else {
-    // Si pas de préférence sauvegardée, mettre le mode sombre par défaut
-    setDarkMode(true);
-    localStorage.setItem('darkMode', 'true');
-  }
-  fetchItems();
-}, []);
+    localStorage.setItem('darkMode', darkMode.toString());
+  }, [darkMode]);
 
   useEffect(() => {
     if (searchQuery.length > 1) {
@@ -928,14 +915,21 @@ const resetInventory = async () => {
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6 mb-6`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
+              <button
+                onClick={() => window.location.href = '/'}
+                className={`${darkMode ? 'text-gray-400 hover:text-orange-400 hover:bg-gray-700' : 'text-gray-600 hover:text-orange-600 hover:bg-gray-100'} p-2 rounded-lg transition`}
+                title="Retour à l'accueil"
+              >
+                <Home size={24} />
+              </button>
               <div className="bg-orange-600 p-3 rounded-xl">
-                <Dices size={28} color="white" />
+                <Package size={28} color="white" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
                     <h1 className={`text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Inventaire de Jeux</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Et si on comptait tous ces jeux en famille ?</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Avec Cloudinary - Upload ultra rapide ⚡</p>
                   </div>
                   {selectedGame && !editMode && !detailedView && (
                     <button
