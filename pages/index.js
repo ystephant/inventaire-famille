@@ -929,7 +929,7 @@ const resetInventory = async () => {
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
                     <h1 className={`text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Inventaire de Jeux</h1>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Et si on comptait tous ces jeux en famille ?</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Et si on comptait les jeux en famille ?</p>
                   </div>
                   {selectedGame && !editMode && !detailedView && (
                     <button
