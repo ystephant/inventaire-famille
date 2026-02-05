@@ -190,7 +190,11 @@ export default function InventaireJeux() {
         }
       )
       .subscribe();
-    return () => supabase.removeChannel(channel);
+    return () => {
+  if (channel) {
+    supabase.removeChannel(channel).catch(() => {});
+  }
+};
   }, []);
 
   useEffect(() => {
@@ -198,6 +202,10 @@ export default function InventaireJeux() {
   const savedTheme = localStorage.getItem('darkMode');
   if (savedTheme !== null) {
     setDarkMode(savedTheme === 'true');
+  } else {
+    // Si pas de préférence sauvegardée, mettre le mode sombre par défaut
+    setDarkMode(true);
+    localStorage.setItem('darkMode', 'true');
   }
   fetchItems();
 }, []);
