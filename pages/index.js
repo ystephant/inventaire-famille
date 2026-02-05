@@ -152,18 +152,15 @@ export default function InventaireJeux() {
     autoLogin();
   }, []);
   
-// 1️⃣ Chargement initial
+// 1️⃣ Chargement initial + Synchronisation temps réel
   useEffect(() => {
-  if (!authenticated) return; // ⭐ Ajoutez cette ligne
-  
-  const savedDarkMode = localStorage.getItem('darkMode');
-  if (savedDarkMode !== null) setDarkMode(savedDarkMode === 'true');
-  loadGames();
-  loadEvaluations();
-}, [authenticated]); // ⭐ Changez [] par [authenticated]
+    if (!authenticated) return;
+    
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode !== null) setDarkMode(savedDarkMode === 'true');
+    loadGames();
+    loadEvaluations();
 
-  // 2️⃣ Synchronisation temps réel
-  useEffect(() => {
     const channel = supabase
       .channel('games-realtime')
       .on('postgres_changes', 
@@ -190,12 +187,11 @@ export default function InventaireJeux() {
         }
       )
       .subscribe();
-    return () => sureturn () => {
-  supabase.removeChannel(channel).catch(() => {
-    // Ignorer les erreurs de déconnexion
-  });
-};pabase.removeChannel(channel);
-  }, []);
+    
+    return () => {
+      supabase.removeChannel(channel).catch(() => {});
+    };
+  }, [authenticated]);
 
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode.toString());
