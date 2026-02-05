@@ -190,7 +190,11 @@ export default function InventaireJeux() {
         }
       )
       .subscribe();
-    return () => supabase.removeChannel(channel);
+    return () => sureturn () => {
+  supabase.removeChannel(channel).catch(() => {
+    // Ignorer les erreurs de déconnexion
+  });
+};pabase.removeChannel(channel);
   }, []);
 
   useEffect(() => {
@@ -915,13 +919,6 @@ const resetInventory = async () => {
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6 mb-6`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
-              <button
-                onClick={() => window.location.href = '/'}
-                className={`${darkMode ? 'text-gray-400 hover:text-orange-400 hover:bg-gray-700' : 'text-gray-600 hover:text-orange-600 hover:bg-gray-100'} p-2 rounded-lg transition`}
-                title="Retour à l'accueil"
-              >
-                <Home size={24} />
-              </button>
               <div className="bg-orange-600 p-3 rounded-xl">
                 <Dices size={28} color="white" />
               </div>
@@ -1982,26 +1979,16 @@ function DetailedViewComponent({
                     const isChecked = checkedItems[`detail_${detailedView.itemIndex}_${photo.id}`];
                     return (
                       <div
-  key={photo.id}
-  onClick={(e) => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      e.stopPropagation();
-      setFullscreenPhoto(photo);
-      setLastTap(0);
-    } else {
-      setLastTap(now);
-      toggleDetailPhoto(detailedView.itemIndex, photo.id);
-    }
-  }}
-  className={`relative aspect-square rounded-lg cursor-pointer transition-all border-4 overflow-hidden ${
-    isChecked
-      ? 'border-green-500 opacity-60'
-      : darkMode
-        ? 'border-gray-600 hover:border-purple-500'
-        : 'border-gray-200 hover:border-purple-500'
-  }`}
->
+                        key={photo.id}
+                        onClick={() => toggleDetailPhoto(detailedView.itemIndex, photo.id)}
+                        className={`relative aspect-square rounded-lg cursor-pointer transition-all border-4 overflow-hidden ${
+                          isChecked
+                            ? 'border-green-500 opacity-60'
+                            : darkMode
+                              ? 'border-gray-600 hover:border-purple-500'
+                              : 'border-gray-200 hover:border-purple-500'
+                        }`}
+                      >
                         <img 
                           src={getOptimizedImage(photo.image, 400)} 
                           alt={photo.name || 'Photo'}
