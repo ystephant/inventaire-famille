@@ -954,8 +954,21 @@ const resetInventory = async () => {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-amber-50 to-orange-100'} py-8 px-4`}>
-      <div className="max-w-4xl mx-auto">
+    <div 
+      className="min-h-screen relative py-8 px-4"
+      style={{
+        backgroundColor: darkMode ? '#111827' : '#fef3c7'
+      }}
+    >
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${backgroundImageUrl})`,
+          opacity: darkMode ? 0.1 : 0.15,
+          zIndex: 0
+        }}
+      />
+      <div className="max-w-4xl mx-auto relative z-10">
         {syncStatus && (
           <div className="fixed top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg shadow-lg z-50 text-sm">
             {syncStatus}
