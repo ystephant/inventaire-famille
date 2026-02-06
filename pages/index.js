@@ -228,6 +228,9 @@ export default function InventaireJeux() {
     };
   }, [authenticated]);
 
+  // Image de fond
+  const backgroundImageUrl = "/background.png"; // Nom de votre fichier dans /public
+
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
@@ -907,7 +910,21 @@ const resetInventory = async () => {
       // ⭐ AJOUTEZ CECI AVANT LE return
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div 
+  className="min-h-screen transition-colors relative"
+  style={{
+    backgroundColor: darkMode ? '#111827' : '#f9fafb'
+  }}
+>
+  <div 
+    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+    style={{
+      backgroundImage: `url(${backgroundImageUrl})`,
+      opacity: darkMode ? 0.1 : 0.15, // Ajustez la transparence ici (0.1 = 10%, 0.15 = 15%)
+      zIndex: 0
+    }}
+  />
+  <div className="relative z-10">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg font-semibold">Connexion en cours...</p>
@@ -2134,6 +2151,7 @@ function DetailedViewComponent({
               <X size={24} />
             </button>
           </div>
+          </div> {/* Fermeture du div z-10 */}
         </div>
       )}
     </>
