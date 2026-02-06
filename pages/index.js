@@ -906,26 +906,23 @@ const resetInventory = async () => {
   };
   
 // Loading screen
-  if (loading) {
-      // ⭐ AJOUTEZ CECI AVANT LE return
   if (authLoading) {
     return (
       <div 
-  className="min-h-screen transition-colors relative"
-  style={{
-    backgroundColor: darkMode ? '#111827' : '#f9fafb'
-  }}
->
-  <div 
-    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-    style={{
-      backgroundImage: `url(${backgroundImageUrl})`,
-      opacity: darkMode ? 0.1 : 0.15, // Ajustez la transparence ici (0.1 = 10%, 0.15 = 15%)
-      zIndex: 0
-    }}
-  />
-  <div className="relative z-10">
-        <div className="text-center">
+        className="min-h-screen transition-colors relative flex items-center justify-center"
+        style={{
+          backgroundColor: darkMode ? '#111827' : '#f9fafb'
+        }}
+      >
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${backgroundImageUrl})`,
+            opacity: darkMode ? 0.1 : 0.15,
+            zIndex: 0
+          }}
+        />
+        <div className="relative z-10 text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg font-semibold">Connexion en cours...</p>
         </div>
@@ -940,6 +937,17 @@ const resetInventory = async () => {
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Erreur de connexion</h2>
           <p className="text-gray-600">Vérifiez la configuration Vercel</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'} flex items-center justify-center`}>
+        <div className="text-center">
+          <div className="animate-spin inline-block w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full mb-4"></div>
+          <div className={`text-xl ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>Chargement...</div>
         </div>
       </div>
     );
@@ -2151,7 +2159,6 @@ function DetailedViewComponent({
               <X size={24} />
             </button>
           </div>
-          </div> {/* Fermeture du div z-10 */}
         </div>
       )}
     </>
