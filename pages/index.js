@@ -922,7 +922,7 @@ const resetInventory = async () => {
             opacity: 1
           }}
         />
-        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.3 : 0.2 }} />
+        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.9 : 0.8 }} />
       </div>
         <div className="relative z-10 text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
@@ -970,7 +970,7 @@ const resetInventory = async () => {
             opacity: 1
           }}
         />
-        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.3 : 0.2 }} />
+        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.9 : 0.8 }} />
       </div>
       <div className="max-w-4xl mx-auto relative z-10">
         {syncStatus && (
