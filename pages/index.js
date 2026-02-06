@@ -914,15 +914,16 @@ const resetInventory = async () => {
           backgroundColor: darkMode ? '#111827' : '#f9fafb'
         }}
       >
+        <div className="absolute inset-0" style={{ zIndex: 0 }}>
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImageUrl})`,
-            //opacity: darkMode ? 0.02 : 0.03,
-            opacity: darkMode ? 1,
-            zIndex: 0
+            opacity: 1
           }}
         />
+        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.7 : 0.5 }} />
+      </div>
         <div className="relative z-10 text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg font-semibold">Connexion en cours...</p>
@@ -961,15 +962,16 @@ const resetInventory = async () => {
         backgroundColor: darkMode ? '#111827' : '#fef3c7'
       }}
     >
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${backgroundImageUrl})`,
-          //opacity: darkMode ? 0.02 : 0.03,
-          opacity: darkMode ? 1,
-          zIndex: 0
-        }}
-      />
+      <div className="absolute inset-0" style={{ zIndex: 0 }}>
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${backgroundImageUrl})`,
+            opacity: 1
+          }}
+        />
+        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.7 : 0.5 }} />
+      </div>
       <div className="max-w-4xl mx-auto relative z-10">
         {syncStatus && (
           <div className="fixed top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg shadow-lg z-50 text-sm">
