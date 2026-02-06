@@ -918,7 +918,7 @@ const resetInventory = async () => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImageUrl})`,
-            opacity: darkMode ? 0.1 : 0.15,
+            opacity: darkMode ? 0.02 : 0.03,
             zIndex: 0
           }}
         />
@@ -964,7 +964,7 @@ const resetInventory = async () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${backgroundImageUrl})`,
-          opacity: darkMode ? 0.1 : 0.15,
+          opacity: darkMode ? 0.02 : 0.03,
           zIndex: 0
         }}
       />
