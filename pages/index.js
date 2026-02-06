@@ -23,6 +23,41 @@ const CLOUDINARY_UPLOAD_PRESET = 'boardgames_upload';
 
 // 🎨 Composant principal
 export default function InventaireJeux() {
+
+// Empêcher la mise en veille sur mobile
+  useEffect(() => {
+    let wakeLock = null;
+    
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('Wake Lock activé');
+        }
+      } catch (err) {
+        console.log('Wake Lock non supporté:', err);
+      }
+    };
+
+    requestWakeLock();
+
+    // Réactiver le Wake Lock si l'utilisateur revient sur la page
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && wakeLock !== null) {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (wakeLock !== null) {
+        wakeLock.release();
+      }
+    };
+  }, []);
+  
   // States
   const [darkMode, setDarkMode] = useState(true);
   const [username] = useState('demo_user');
@@ -1966,7 +2001,7 @@ function DetailedViewComponent({
               <div>
                 <div className={`mb-4 p-3 rounded-xl ${darkMode ? 'bg-purple-900 bg-opacity-30' : 'bg-purple-50'}`}>
                   <p className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-                    💡 Double-cliquez sur une photo pour la voir en plein écran • Navigation par pages
+                    💡 Cliquez sur le bouton zoom pour voir une photo en plein écran
                   </p>
                 </div>
                 
