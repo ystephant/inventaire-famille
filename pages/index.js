@@ -95,6 +95,7 @@ export default function InventaireJeux() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [photoRotations, setPhotoRotations] = useState({});
   const [sortOrder, setSortOrder] = useState('default'); // 'default', 'asc', 'desc'
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   const [authenticated, setAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
@@ -645,6 +646,9 @@ const resetInventory = async () => {
   };
 
   const openDetailedView = (itemIndex, itemName) => {
+    // Sauvegarder la position de scroll actuelle
+    setScrollPosition(window.scrollY || window.pageYOffset);
+    
     const photos = itemDetails[itemIndex] || [];
     setCurrentDetailPhotos(photos);
     setDetailedView({ itemIndex, itemName });
@@ -667,6 +671,11 @@ const resetInventory = async () => {
     setDetailedView(null);
     setCurrentDetailPhotos([]);
     setEditingDetails(false);
+    
+    // Restaurer la position de scroll après un court délai
+    setTimeout(() => {
+      window.scrollTo(0, scrollPosition);
+    }, 0);
   };
 
   const startEditingDetails = () => setEditingDetails(true);
