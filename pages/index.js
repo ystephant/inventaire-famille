@@ -917,7 +917,7 @@ const resetInventory = async () => {
       <div 
         className="min-h-screen transition-colors relative flex items-center justify-center"
         style={{
-          backgroundColor: darkMode ? '#111827' : '#f9fafb'
+          backgroundColor: darkMode ? '#111827' : '#fff4e0'
         }}
       >
         <div className="relative z-10 text-center">
@@ -955,7 +955,7 @@ const resetInventory = async () => {
     <div 
       className="min-h-screen relative py-8 px-4"
       style={{
-        backgroundColor: darkMode ? '#111827' : '#fef3c7'
+        backgroundColor: darkMode ? '#111827' : '#fff4e0'
       }}
     >
       <div className="max-w-4xl mx-auto relative z-10">
