@@ -923,16 +923,6 @@ const resetInventory = async () => {
           backgroundColor: darkMode ? '#111827' : '#f9fafb'
         }}
       >
-        <div className="absolute inset-0" style={{ zIndex: 0 }}>
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${backgroundImageUrl})`,
-            opacity: 1
-          }}
-        />
-        <div className="absolute inset-0 bg-black" style={{ opacity: darkMode ? 0.9 : 0.8 }} />
-      </div>
         <div className="relative z-10 text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg font-semibold">Connexion en cours...</p>
