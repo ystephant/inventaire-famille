@@ -1746,7 +1746,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                   title="Copier cette ligne"
                   className={`p-2 rounded-lg transition ${
                     copiedItem === item
-                      ? darkMode ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white'
+                      ? darkMode ? 'bg-blue-300 text-white' : 'bg-blue-200 text-blue-800'
                       : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                   }`}
                 >
@@ -1758,7 +1758,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                     onClick={() => handlePasteOnItem(index)}
                     title={`Coller "${copiedItem}" ici`}
                     className={`p-2 rounded-lg transition ${
-                      darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
+                      darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
                     }`}
                   >
                     <Clipboard size={18} />
@@ -1794,7 +1794,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
               onClick={handlePasteAsNewItem}
               title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
               className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
+                darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
               }`}
             >
               <Clipboard size={18} />
@@ -1908,7 +1908,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                       title="Copier cette ligne"
                       className={`p-2 rounded-lg transition ${
                         copiedItem === item
-                          ? darkMode ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white'
+                          ? darkMode ? 'bg-blue-300 text-white' : 'bg-blue-200 text-blue-800'
                           : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                       }`}
                     >
@@ -1920,7 +1920,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                         onClick={() => handlePasteOnItem(index)}
                         title={`Coller "${copiedItem}" ici`}
                         className={`p-2 rounded-lg transition ${
-                          darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
+                          darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
                         }`}
                       >
                         <Clipboard size={18} />
@@ -1956,7 +1956,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                   onClick={handlePasteAsNewItem}
                   title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
                   className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                    darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
+                    darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
                   }`}
                 >
                   <Clipboard size={18} />
