@@ -1783,7 +1783,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
 
         <div className="flex flex-col gap-2 mt-4">
           <button
-            onClick={addItemField}
+            onClick={() => addItemField()}
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
           >
             <Plus size={18} />
@@ -1945,7 +1945,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
 
             <div className="flex flex-col gap-2 mt-3">
               <button
-                onClick={addItemField}
+                onClick={() => addItemField()}
                 className="w-full bg-orange-600 text-white py-2 rounded-lg font-semibold hover:bg-orange-700 transition flex items-center justify-center gap-2"
               >
                 <Plus size={18} />
