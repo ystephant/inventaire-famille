@@ -1707,7 +1707,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
         {/* Bandeau presse-papiers actif */}
         {copiedItem !== null && (
           <div className={`mb-3 px-3 py-2 rounded-lg flex items-center justify-between gap-2 text-sm ${
-            darkMode ? 'bg-yellow-900 bg-opacity-40 border border-yellow-700 text-yellow-300' : 'bg-yellow-50 border border-yellow-300 text-yellow-800'
+            darkMode ? 'bg-blue-900 bg-opacity-40 border border-blue-700 text-blue-300' : 'bg-blue-50 border border-blue-300 text-blue-800'
           }`}>
             <div className="flex items-center gap-2 min-w-0">
               <Clipboard size={14} className="flex-shrink-0" />
@@ -1718,7 +1718,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
             <button
               onClick={() => setCopiedItem(null)}
               className={`flex-shrink-0 p-1 rounded transition ${
-                darkMode ? 'hover:bg-yellow-800 text-yellow-400' : 'hover:bg-yellow-200 text-yellow-700'
+                darkMode ? 'hover:bg-blue-800 text-blue-400' : 'hover:bg-blue-200 text-blue-700'
               }`}
               title="Effacer le presse-papiers"
             >
@@ -1746,7 +1746,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                   title="Copier cette ligne"
                   className={`p-2 rounded-lg transition ${
                     copiedItem === item
-                      ? darkMode ? 'bg-yellow-600 text-white' : 'bg-yellow-500 text-white'
+                      ? darkMode ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white'
                       : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                   }`}
                 >
@@ -1758,7 +1758,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                     onClick={() => handlePasteOnItem(index)}
                     title={`Coller "${copiedItem}" ici`}
                     className={`p-2 rounded-lg transition ${
-                      darkMode ? 'bg-yellow-700 hover:bg-yellow-600 text-white' : 'bg-yellow-400 hover:bg-yellow-500 text-white'
+                      darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
                     }`}
                   >
                     <Clipboard size={18} />
@@ -1794,7 +1794,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
               onClick={handlePasteAsNewItem}
               title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
               className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                darkMode ? 'bg-yellow-700 hover:bg-yellow-600 text-white' : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
               }`}
             >
               <Clipboard size={18} />
@@ -1869,7 +1869,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
             {/* Bandeau presse-papiers actif */}
             {copiedItem !== null && (
               <div className={`mb-3 px-3 py-2 rounded-lg flex items-center justify-between gap-2 text-sm ${
-                darkMode ? 'bg-yellow-900 bg-opacity-40 border border-yellow-700 text-yellow-300' : 'bg-yellow-50 border border-yellow-300 text-yellow-800'
+                darkMode ? 'bg-blue-900 bg-opacity-40 border border-blue-700 text-blue-300' : 'bg-blue-50 border border-blue-300 text-blue-800'
               }`}>
                 <div className="flex items-center gap-2 min-w-0">
                   <Clipboard size={14} className="flex-shrink-0" />
@@ -1880,7 +1880,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                 <button
                   onClick={() => setCopiedItem(null)}
                   className={`flex-shrink-0 p-1 rounded transition ${
-                    darkMode ? 'hover:bg-yellow-800 text-yellow-400' : 'hover:bg-yellow-200 text-yellow-700'
+                    darkMode ? 'hover:bg-blue-800 text-blue-400' : 'hover:bg-blue-200 text-blue-700'
                   }`}
                   title="Effacer le presse-papiers"
                 >
@@ -1908,7 +1908,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                       title="Copier cette ligne"
                       className={`p-2 rounded-lg transition ${
                         copiedItem === item
-                          ? darkMode ? 'bg-yellow-600 text-white' : 'bg-yellow-500 text-white'
+                          ? darkMode ? 'bg-blue-500 text-white' : 'bg-blue-400 text-white'
                           : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                       }`}
                     >
@@ -1920,7 +1920,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                         onClick={() => handlePasteOnItem(index)}
                         title={`Coller "${copiedItem}" ici`}
                         className={`p-2 rounded-lg transition ${
-                          darkMode ? 'bg-yellow-700 hover:bg-yellow-600 text-white' : 'bg-yellow-400 hover:bg-yellow-500 text-white'
+                          darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
                         }`}
                       >
                         <Clipboard size={18} />
@@ -1956,7 +1956,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                   onClick={handlePasteAsNewItem}
                   title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
                   className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                    darkMode ? 'bg-yellow-700 hover:bg-yellow-600 text-white' : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                    darkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-blue-300 hover:bg-blue-400 text-white'
                   }`}
                 >
                   <Clipboard size={18} />
@@ -1995,7 +1995,7 @@ function AdminPasswordModal({ darkMode, onConfirm, onClose }) {
   const [error, setError] = useState(false);
 
   const handleSubmit = () => {
-    if (password === 'admin') {
+    if (password.toLowerCase() === 'admin') {
       onClose();
       onConfirm();
     } else {
