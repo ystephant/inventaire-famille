@@ -101,6 +101,12 @@ export default function InventaireJeux() {
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
 
+  const [adminPasswordModal, setAdminPasswordModal] = useState({ show: false, onConfirm: null });
+
+  const requestAdminPassword = (onConfirm) => {
+    setAdminPasswordModal({ show: true, onConfirm });
+  };
+
   // 📸 Upload vers Cloudinary
   const uploadToCloudinary = async (file, folder = 'boardgames') => {
     const formData = new FormData();
@@ -451,7 +457,6 @@ const getAggregatedItems = () => {
   };
 
   const deleteGame = async (gameId, gameName) => {
-    if (!confirm(`⚠️ Voulez-vous vraiment supprimer "${gameName}" ?`)) return;
     try {
       const { error } = await supabase.from('games').delete().eq('id', gameId);
       if (error) throw error;
@@ -1035,6 +1040,7 @@ const resetInventory = async () => {
             searchResults={searchResults}
             selectGame={selectGame}
             deleteGame={deleteGame}
+            requestAdminPassword={requestAdminPassword}
             allGames={allGames}
             showAllGamesList={showAllGamesList}
             setShowAllGamesList={setShowAllGamesList}
@@ -1052,6 +1058,7 @@ const resetInventory = async () => {
             selectedGame={selectedGame}
             startEditMode={startEditMode}
             deleteGame={deleteGame}
+            requestAdminPassword={requestAdminPassword}
             getProgress={getProgress}
             resetInventory={resetInventory}
             getAggregatedItems={getAggregatedItems}
@@ -1092,6 +1099,7 @@ const resetInventory = async () => {
             addItemField={addItemField}
             saveEdit={saveEdit}
             cancelEdit={cancelEdit}
+            requestAdminPassword={requestAdminPassword}
           />
         )}
 
@@ -1141,13 +1149,22 @@ const resetInventory = async () => {
             closeCreateModal={closeCreateModal}
           />
         )}
+
+        {/* Modal mot de passe administration */}
+        {adminPasswordModal.show && (
+          <AdminPasswordModal
+            darkMode={darkMode}
+            onConfirm={adminPasswordModal.onConfirm}
+            onClose={() => setAdminPasswordModal({ show: false, onConfirm: null })}
+          />
+        )}
       </div>
     </div>
   );
 }
 
 // Composant SearchGameSection
-function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults, searchResults, selectGame, deleteGame, allGames, showAllGamesList, setShowAllGamesList, openCreateModal, evaluations, deleteEvaluation, deleteAllEvaluations }) {
+function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults, searchResults, selectGame, deleteGame, requestAdminPassword, allGames, showAllGamesList, setShowAllGamesList, openCreateModal, evaluations, deleteEvaluation, deleteAllEvaluations }) {
   const formatDate = (isoString) => {
     const date = new Date(isoString);
     return date.toLocaleDateString('fr-FR', { 
@@ -1209,7 +1226,7 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
                   </div>
                 </button>
                 <button
-                  onClick={() => deleteGame(game.id, game.name)}
+                  onClick={() => requestAdminPassword(() => deleteGame(game.id, game.name))}
                   className={`px-3 py-3 opacity-0 group-hover:opacity-100 transition ${
                     darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'
                   }`}
@@ -1273,7 +1290,7 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
                   {game.name}
                 </button>
                 <button
-                  onClick={() => deleteGame(game.id, game.name)}
+                  onClick={() => requestAdminPassword(() => deleteGame(game.id, game.name))}
                   className={`px-2 py-2 opacity-0 group-hover:opacity-100 transition ${
                     darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'
                   }`}
@@ -1361,7 +1378,7 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
 }
 
 // Composant GameInventorySection avec AGRÉGATION
-function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGame, getProgress, resetInventory, getAggregatedItems, getAggregatedProgress, checkedItems, toggleItem, itemDetails, getDetailPhotoCount, openDetailedView, supabase, setSyncStatus, toggleAggregatedType, gameRating, setGameRating, senderName, setSenderName, additionalComment, setAdditionalComment, saveEvaluation, sortOrder, setSortOrder, getSortedItems }) {
+function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGame, requestAdminPassword, getProgress, resetInventory, getAggregatedItems, getAggregatedProgress, checkedItems, toggleItem, itemDetails, getDetailPhotoCount, openDetailedView, supabase, setSyncStatus, toggleAggregatedType, gameRating, setGameRating, senderName, setSenderName, additionalComment, setAdditionalComment, saveEvaluation, sortOrder, setSortOrder, getSortedItems }) {
   const StarSelector = ({ rating, setRating }) => {
     return (
       <div className="flex gap-1">
@@ -1401,7 +1418,7 @@ function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGam
               Éditer
             </button>
             <button
-              onClick={() => deleteGame(selectedGame.id, selectedGame.name)}
+              onClick={() => requestAdminPassword(() => deleteGame(selectedGame.id, selectedGame.name))}
               className={`px-3 py-2 rounded-lg font-medium transition text-sm ${
                 darkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'
               }`}
@@ -1619,7 +1636,7 @@ function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGam
 }
 
 // Composant EditGameSection
-function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, editingGameName, setEditingGameName, newGameItems, updateItemField, removeItemField, addItemField, saveEdit, cancelEdit }) {
+function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, editingGameName, setEditingGameName, newGameItems, updateItemField, removeItemField, addItemField, saveEdit, cancelEdit, requestAdminPassword }) {
   const [copiedItem, setCopiedItem] = useState(null);
 
   const handleCopyItem = (item) => {
@@ -1749,7 +1766,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                 )}
                 {/* Bouton Supprimer */}
                 <button
-                  onClick={() => removeItemField(index)}
+                  onClick={() => requestAdminPassword(() => removeItemField(index))}
                   disabled={newGameItems.length <= 1}
                   className={`p-2 rounded-lg transition ${
                     newGameItems.length <= 1
@@ -1966,6 +1983,84 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
               Annuler
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Composant AdminPasswordModal
+function AdminPasswordModal({ darkMode, onConfirm, onClose }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleSubmit = () => {
+    if (password === 'admin') {
+      onClose();
+      onConfirm();
+    } else {
+      setError(true);
+      setPassword('');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl p-6 max-w-sm w-full`}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className={`text-lg font-bold flex items-center gap-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+            🔒 Accès administration
+          </h2>
+          <button
+            onClick={onClose}
+            className={`p-2 rounded-lg transition ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'}`}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          Saisir le mot de passe d'administration pour effectuer cette suppression.
+        </p>
+
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => { setPassword(e.target.value); setError(false); }}
+          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+          placeholder="Mot de passe"
+          autoFocus
+          className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none mb-2 ${
+            error
+              ? 'border-red-500 focus:border-red-500'
+              : darkMode
+                ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-red-500'
+                : 'bg-white border-gray-200 text-gray-900 focus:border-red-500'
+          }`}
+        />
+
+        {error && (
+          <p className="text-red-500 text-sm mb-3 flex items-center gap-1">
+            <AlertCircle size={14} />
+            Mot de passe incorrect
+          </p>
+        )}
+
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={onClose}
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+              darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Annuler
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex-1 px-4 py-2 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition"
+          >
+            Supprimer
+          </button>
         </div>
       </div>
     </div>
