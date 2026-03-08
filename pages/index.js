@@ -1727,22 +1727,22 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
 
   return (
     <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6`}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h2 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} flex items-center gap-2`}>
-          <Edit size={24} className="text-blue-500" />
+      <div className="flex flex-col gap-3 mb-6">
+        <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} flex items-center gap-2`}>
+          <Edit size={22} className="text-blue-500 flex-shrink-0" />
           Éditer le jeu
         </h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full">
           <button
             onClick={saveEdit}
-            className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2"
+            className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2"
           >
             <Check size={18} />
             Valider
           </button>
           <button
             onClick={cancelEdit}
-            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
               darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
