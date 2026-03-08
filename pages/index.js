@@ -1187,7 +1187,7 @@ const resetInventory = async () => {
 
         {/* Toast succès édition */}
         {saveSuccessToast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 bg-green-600 text-white text-sm font-semibold animate-bounce">
+          <div className="fixed bottom-6 left-4 right-4 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 bg-green-600 text-white text-sm font-semibold sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-max">
             <Check size={18} />
             Jeu <span className="font-bold">"{saveSuccessToast}"</span> édité avec succès
           </div>
