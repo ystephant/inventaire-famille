@@ -102,6 +102,8 @@ export default function InventaireJeux() {
   const [currentUserId, setCurrentUserId] = useState(null);
 
   const [adminPasswordModal, setAdminPasswordModal] = useState({ show: false, onConfirm: null });
+  const [saveSuccessToast, setSaveSuccessToast] = useState('');
+  const [resetConfirmModal, setResetConfirmModal] = useState(false);
 
   const requestAdminPassword = (onConfirm) => {
     setAdminPasswordModal({ show: true, onConfirm });
@@ -568,7 +570,11 @@ const toggleAggregatedType = async (itemType) => {
 // 👆 JUSQU'ICI
 
 const resetInventory = async () => {
-    if (!confirm('Réinitialiser l\'inventaire ?')) return;
+    setResetConfirmModal(true);
+  };
+
+  const confirmResetInventory = async () => {
+    setResetConfirmModal(false);
     setCheckedItems({});
     setGameRating(0);
     setSenderName('');
@@ -581,7 +587,7 @@ const resetInventory = async () => {
     } catch (error) {
       console.error('Erreur sauvegarde:', error);
     }
-  };;
+  };
 
   const changeGame = () => {
     setSelectedGame(null);
@@ -911,6 +917,8 @@ const resetInventory = async () => {
       if (error) throw error;
       setSyncStatus('✅ Synchronisé');
       setTimeout(() => setSyncStatus(''), 2000);
+      setSaveSuccessToast(newGameName.trim());
+      setTimeout(() => setSaveSuccessToast(''), 2000);
       setEditMode(false);
       setEditingGameName(false);
       setCheckedItems({});
@@ -1165,6 +1173,24 @@ const resetInventory = async () => {
             onConfirm={adminPasswordModal.onConfirm}
             onClose={() => setAdminPasswordModal({ show: false, onConfirm: null })}
           />
+        )}
+
+        {/* Modal confirmation réinitialisation */}
+        {resetConfirmModal && (
+          <ResetConfirmModal
+            darkMode={darkMode}
+            gameName={selectedGame?.name}
+            onConfirm={confirmResetInventory}
+            onClose={() => setResetConfirmModal(false)}
+          />
+        )}
+
+        {/* Toast succès édition */}
+        {saveSuccessToast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 bg-green-600 text-white text-sm font-semibold animate-bounce">
+            <Check size={18} />
+            Jeu <span className="font-bold">"{saveSuccessToast}"</span> édité avec succès
+          </div>
         )}
       </div>
     </div>
@@ -2088,6 +2114,49 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
               Annuler
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Composant ResetConfirmModal
+function ResetConfirmModal({ darkMode, gameName, onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl p-6 max-w-sm w-full`}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className={`text-lg font-bold flex items-center gap-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+            <RotateCcw size={20} className="text-orange-500" />
+            Réinitialiser l'inventaire
+          </h2>
+          <button
+            onClick={onClose}
+            className={`p-2 rounded-lg transition ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'}`}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          Veux-tu vraiment réinitialiser l'inventaire de <strong className={darkMode ? 'text-gray-100' : 'text-gray-800'}>"{gameName}"</strong> ? Toutes les cases cochées seront décochées.
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold transition ${
+              darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Non
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-3 rounded-xl font-semibold bg-orange-600 text-white hover:bg-orange-700 transition"
+          >
+            Oui
+          </button>
         </div>
       </div>
     </div>
