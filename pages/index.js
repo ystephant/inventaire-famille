@@ -1250,14 +1250,14 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
           <div className={`absolute w-full mt-2 rounded-xl shadow-xl border-2 p-4 ${
             darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
           }`}>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <AlertCircle size={20} className="text-orange-500" />
                 <span className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Jeu introuvable</span>
               </div>
               <button
                 onClick={openCreateModal}
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-700 transition flex items-center gap-2"
+                className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-700 transition flex items-center justify-center gap-2"
               >
                 <Plus size={18} />
                 Créer ce jeu
