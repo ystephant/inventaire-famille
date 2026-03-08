@@ -1751,9 +1751,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
           <button
             onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
             className={`text-xs px-2 py-1 rounded-md font-medium transition flex items-center gap-1 ${
-              selectionMode
-                ? darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
-                : darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-400 hover:text-red-600'
+              darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             <Trash2 size={12} />
