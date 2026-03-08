@@ -1727,7 +1727,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
 
   return (
     <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6`}>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h2 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} flex items-center gap-2`}>
           <Edit size={24} className="text-blue-500" />
           Éditer le jeu
@@ -1735,14 +1735,14 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
         <div className="flex gap-2">
           <button
             onClick={saveEdit}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
+            className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2"
           >
             <Check size={18} />
             Valider
           </button>
           <button
             onClick={cancelEdit}
-            className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
               darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
@@ -2124,7 +2124,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
 function ResetConfirmModal({ darkMode, gameName, onConfirm, onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl p-6 max-w-sm w-full`}>
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-orange-500`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className={`text-lg font-bold flex items-center gap-2 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
             <RotateCcw size={20} className="text-orange-500" />
