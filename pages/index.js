@@ -1996,17 +1996,17 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
             
             <div className="space-y-3">
               {newGameItems.map((item, index) => (
-                <div key={index} className="flex flex-col sm:flex-row gap-2">
+                <div key={index} className="flex flex-row gap-2">
                   <input
                     type="text"
                     value={item}
                     onChange={(e) => updateItemField(index, e.target.value)}
                     placeholder="Ex: 54 cartes, 8 pions loupes..."
-                    className={`flex-1 px-4 py-2 border-2 rounded-lg focus:border-orange-500 focus:outline-none ${
+                    className={`flex-1 min-w-0 px-2 py-2 text-sm border-2 rounded-lg focus:border-orange-500 focus:outline-none ${
                       darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-200 text-gray-900'
                     }`}
                   />
-                  <div className="flex gap-2 justify-end sm:justify-start">
+                  <div className="flex gap-2 flex-shrink-0">
                     {/* Bouton Copier */}
                     <button
                       onClick={() => handleCopyItem(item)}
