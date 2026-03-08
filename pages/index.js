@@ -640,6 +640,13 @@ const resetInventory = async () => {
     if (newGameItems.length <= 1) return;
     setNewGameItems(newGameItems.filter((_, i) => i !== index));
   };
+
+  const removeItemsByIndexes = (indexes) => {
+    const indexSet = new Set(indexes);
+    const remaining = newGameItems.filter((_, i) => !indexSet.has(i));
+    if (remaining.length === 0) return;
+    setNewGameItems(remaining);
+  };
   
   const updateItemField = (index, value) => {
     const updated = [...newGameItems];
@@ -1096,6 +1103,7 @@ const resetInventory = async () => {
             newGameItems={newGameItems}
             updateItemField={updateItemField}
             removeItemField={removeItemField}
+            removeItemsByIndexes={removeItemsByIndexes}
             addItemField={addItemField}
             saveEdit={saveEdit}
             cancelEdit={cancelEdit}
@@ -1636,8 +1644,10 @@ function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGam
 }
 
 // Composant EditGameSection
-function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, editingGameName, setEditingGameName, newGameItems, updateItemField, removeItemField, addItemField, saveEdit, cancelEdit, requestAdminPassword }) {
+function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, editingGameName, setEditingGameName, newGameItems, updateItemField, removeItemField, removeItemsByIndexes, addItemField, saveEdit, cancelEdit, requestAdminPassword }) {
   const [copiedItem, setCopiedItem] = useState(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIndexes, setSelectedIndexes] = useState(new Set());
 
   const handleCopyItem = (item) => {
     setCopiedItem(item);
@@ -1653,6 +1663,40 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
     if (copiedItem !== null) {
       addItemField(copiedItem);
     }
+  };
+
+  const toggleSelection = (index) => {
+    setSelectedIndexes(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIndexes.size === newGameItems.length) {
+      setSelectedIndexes(new Set());
+    } else {
+      setSelectedIndexes(new Set(newGameItems.map((_, i) => i)));
+    }
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedIndexes(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIndexes.size === 0) return;
+    if (selectedIndexes.size >= newGameItems.length) {
+      alert('Vous ne pouvez pas supprimer tous les éléments. Le jeu doit en contenir au moins un.');
+      return;
+    }
+    requestAdminPassword(() => {
+      removeItemsByIndexes([...selectedIndexes]);
+      exitSelectionMode();
+    });
   };
 
   return (
@@ -1700,12 +1744,58 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
 
       {/* Section modification des éléments */}
       <div>
-        <label className={`block text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
-          Contenu du jeu
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className={`block text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+            Contenu du jeu
+          </label>
+          <button
+            onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
+            className={`text-sm px-3 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
+              selectionMode
+                ? darkMode ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : darkMode ? 'bg-red-900 bg-opacity-40 text-red-300 hover:bg-opacity-60' : 'bg-red-50 text-red-600 hover:bg-red-100'
+            }`}
+          >
+            <Trash2 size={14} />
+            {selectionMode ? 'Annuler la sélection' : 'Sélectionner pour supprimer'}
+          </button>
+        </div>
+
+        {/* Bandeau mode sélection */}
+        {selectionMode && (
+          <div className={`mb-3 px-3 py-2 rounded-lg flex items-center justify-between gap-2 ${
+            darkMode ? 'bg-red-900 bg-opacity-30 border border-red-700' : 'bg-red-50 border border-red-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={selectedIndexes.size === newGameItems.length && newGameItems.length > 0}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 accent-red-500 cursor-pointer"
+              />
+              <span className={`text-sm font-medium ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
+                {selectedIndexes.size === 0
+                  ? 'Sélectionner tout'
+                  : `${selectedIndexes.size} ligne${selectedIndexes.size > 1 ? 's' : ''} sélectionnée${selectedIndexes.size > 1 ? 's' : ''}`}
+              </span>
+            </div>
+            <button
+              onClick={handleBulkDelete}
+              disabled={selectedIndexes.size === 0}
+              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 ${
+                selectedIndexes.size === 0
+                  ? 'opacity-30 cursor-not-allowed bg-red-500 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
+            >
+              <Trash2 size={14} />
+              Supprimer ({selectedIndexes.size})
+            </button>
+          </div>
+        )}
 
         {/* Bandeau presse-papiers actif */}
-        {copiedItem !== null && (
+        {!selectionMode && copiedItem !== null && (
           <div className={`mb-3 px-3 py-2 rounded-lg flex items-center justify-between gap-2 text-sm ${
             darkMode ? 'bg-blue-900 bg-opacity-40 border border-blue-700 text-blue-300' : 'bg-blue-50 border border-blue-300 text-blue-800'
           }`}>
@@ -1718,7 +1808,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
             <button
               onClick={() => setCopiedItem(null)}
               className={`flex-shrink-0 p-1 rounded transition ${
-                darkMode ? 'hover:bg-blue-800 text-blue-400' : 'hover:bg-blue-200 text-blue-700'
+                darkMode ? 'hover:bg-blue-900 text-blue-300' : 'hover:bg-blue-100 text-blue-700'
               }`}
               title="Effacer le presse-papiers"
             >
@@ -1729,7 +1819,21 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
 
         <div className="space-y-3">
           {newGameItems.map((item, index) => (
-            <div key={index} className="flex flex-col sm:flex-row gap-2">
+            <div key={index} className={`flex flex-col sm:flex-row gap-2 ${
+              selectionMode && selectedIndexes.has(index)
+                ? darkMode ? 'bg-red-900 bg-opacity-20 rounded-lg px-2' : 'bg-red-50 rounded-lg px-2'
+                : ''
+            }`}>
+              {selectionMode && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedIndexes.has(index)}
+                    onChange={() => toggleSelection(index)}
+                    className="w-5 h-5 accent-red-500 cursor-pointer"
+                  />
+                </div>
+              )}
               <input
                 type="text"
                 value={item}
@@ -1739,69 +1843,73 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                   darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-200 text-gray-900'
                 }`}
               />
-              <div className="flex gap-2 justify-end sm:justify-start">
-                {/* Bouton Copier */}
-                <button
-                  onClick={() => handleCopyItem(item)}
-                  title="Copier cette ligne"
-                  className={`p-2 rounded-lg transition ${
-                    copiedItem === item
-                      ? darkMode ? 'bg-blue-300 text-white' : 'bg-blue-200 text-blue-800'
-                      : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
-                  }`}
-                >
-                  <Copy size={18} />
-                </button>
-                {/* Bouton Coller sur cette ligne */}
-                {copiedItem !== null && (
+              {!selectionMode && (
+                <div className="flex gap-2 justify-end sm:justify-start">
+                  {/* Bouton Copier */}
                   <button
-                    onClick={() => handlePasteOnItem(index)}
-                    title={`Coller "${copiedItem}" ici`}
+                    onClick={() => handleCopyItem(item)}
+                    title="Copier cette ligne"
                     className={`p-2 rounded-lg transition ${
-                      darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
+                      copiedItem === item
+                        ? darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'
+                        : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                     }`}
                   >
-                    <Clipboard size={18} />
+                    <Copy size={18} />
                   </button>
-                )}
-                {/* Bouton Supprimer */}
-                <button
-                  onClick={() => requestAdminPassword(() => removeItemField(index))}
-                  disabled={newGameItems.length <= 1}
-                  className={`p-2 rounded-lg transition ${
-                    newGameItems.length <= 1
-                      ? 'opacity-30 cursor-not-allowed'
-                      : darkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+                  {/* Bouton Coller sur cette ligne */}
+                  {copiedItem !== null && (
+                    <button
+                      onClick={() => handlePasteOnItem(index)}
+                      title={`Coller "${copiedItem}" ici`}
+                      className={`p-2 rounded-lg transition ${
+                        darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      <Clipboard size={18} />
+                    </button>
+                  )}
+                  {/* Bouton Supprimer */}
+                  <button
+                    onClick={() => requestAdminPassword(() => removeItemField(index))}
+                    disabled={newGameItems.length <= 1}
+                    className={`p-2 rounded-lg transition ${
+                      newGameItems.length <= 1
+                        ? 'opacity-30 cursor-not-allowed'
+                        : darkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
+                    }`}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col gap-2 mt-4">
-          <button
-            onClick={() => addItemField()}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
-          >
-            <Plus size={18} />
-            Ajouter un élément
-          </button>
-          {copiedItem !== null && (
+        {!selectionMode && (
+          <div className="flex flex-col gap-2 mt-4">
             <button
-              onClick={handlePasteAsNewItem}
-              title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
-              className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
-              }`}
+              onClick={() => addItemField()}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
             >
-              <Clipboard size={18} />
-              Coller un nouvel élément
+              <Plus size={18} />
+              Ajouter un élément
             </button>
-          )}
-        </div>
+            {copiedItem !== null && (
+              <button
+                onClick={handlePasteAsNewItem}
+                title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
+                className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+                  darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                <Clipboard size={18} />
+                Coller un nouvel élément
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1880,7 +1988,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                 <button
                   onClick={() => setCopiedItem(null)}
                   className={`flex-shrink-0 p-1 rounded transition ${
-                    darkMode ? 'hover:bg-blue-800 text-blue-400' : 'hover:bg-blue-200 text-blue-700'
+                    darkMode ? 'hover:bg-blue-900 text-blue-300' : 'hover:bg-blue-100 text-blue-700'
                   }`}
                   title="Effacer le presse-papiers"
                 >
@@ -1908,7 +2016,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                       title="Copier cette ligne"
                       className={`p-2 rounded-lg transition ${
                         copiedItem === item
-                          ? darkMode ? 'bg-blue-300 text-white' : 'bg-blue-200 text-blue-800'
+                          ? darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'
                           : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                       }`}
                     >
@@ -1920,7 +2028,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                         onClick={() => handlePasteOnItem(index)}
                         title={`Coller "${copiedItem}" ici`}
                         className={`p-2 rounded-lg transition ${
-                          darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
+                          darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
                         }`}
                       >
                         <Clipboard size={18} />
@@ -1956,7 +2064,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                   onClick={handlePasteAsNewItem}
                   title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
                   className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                    darkMode ? 'bg-blue-400 hover:bg-blue-300 text-white' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'
+                    darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
                   <Clipboard size={18} />
