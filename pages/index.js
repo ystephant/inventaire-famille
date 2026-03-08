@@ -1750,20 +1750,21 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
           </label>
           <button
             onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
-            className={`text-sm px-3 py-1 rounded-lg font-medium transition flex items-center gap-1.5 ${
+            className={`text-xs px-2 py-1 rounded-md font-medium transition flex items-center gap-1 ${
               selectionMode
-                ? darkMode ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                : darkMode ? 'bg-red-900 bg-opacity-40 text-red-300 hover:bg-opacity-60' : 'bg-red-50 text-red-600 hover:bg-red-100'
+                ? darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                : darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-400 hover:text-red-600'
             }`}
           >
-            <Trash2 size={14} />
-            {selectionMode ? 'Annuler la sélection' : 'Sélectionner pour supprimer'}
+            <Trash2 size={12} />
+            <span className="hidden sm:inline">{selectionMode ? 'Annuler' : 'Suppression multiple'}</span>
+            <span className="sm:hidden">{selectionMode ? 'Annuler' : 'Multi-suppr.'}</span>
           </button>
         </div>
 
         {/* Bandeau mode sélection */}
         {selectionMode && (
-          <div className={`mb-3 px-3 py-2 rounded-lg flex items-center justify-between gap-2 ${
+          <div className={`mb-3 px-3 py-2 rounded-lg flex flex-wrap items-center justify-between gap-2 ${
             darkMode ? 'bg-red-900 bg-opacity-30 border border-red-700' : 'bg-red-50 border border-red-200'
           }`}>
             <div className="flex items-center gap-3">
@@ -1775,8 +1776,8 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
               />
               <span className={`text-sm font-medium ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
                 {selectedIndexes.size === 0
-                  ? 'Sélectionner tout'
-                  : `${selectedIndexes.size} ligne${selectedIndexes.size > 1 ? 's' : ''} sélectionnée${selectedIndexes.size > 1 ? 's' : ''}`}
+                  ? 'Tout sélectionner'
+                  : `${selectedIndexes.size} sélectionnée${selectedIndexes.size > 1 ? 's' : ''}`}
               </span>
             </div>
             <button
@@ -1819,39 +1820,37 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
 
         <div className="space-y-3">
           {newGameItems.map((item, index) => (
-            <div key={index} className={`flex flex-col sm:flex-row gap-2 ${
+            <div key={index} className={`flex items-center gap-2 ${
               selectionMode && selectedIndexes.has(index)
                 ? darkMode ? 'bg-red-900 bg-opacity-20 rounded-lg px-2' : 'bg-red-50 rounded-lg px-2'
                 : ''
             }`}>
               {selectionMode && (
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIndexes.has(index)}
-                    onChange={() => toggleSelection(index)}
-                    className="w-5 h-5 accent-red-500 cursor-pointer"
-                  />
-                </div>
+                <input
+                  type="checkbox"
+                  checked={selectedIndexes.has(index)}
+                  onChange={() => toggleSelection(index)}
+                  className="w-5 h-5 flex-shrink-0 accent-red-500 cursor-pointer"
+                />
               )}
               <input
                 type="text"
                 value={item}
                 onChange={(e) => updateItemField(index, e.target.value)}
                 placeholder={`Élément ${index + 1}`}
-                className={`flex-1 px-4 py-2 border-2 rounded-lg focus:border-blue-500 focus:outline-none ${
+                className={`flex-1 min-w-0 px-4 py-2 border-2 rounded-lg focus:border-blue-500 focus:outline-none ${
                   darkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-200 text-gray-900'
                 }`}
               />
               {!selectionMode && (
-                <div className="flex gap-2 justify-end sm:justify-start">
+                <div className="flex gap-2 flex-shrink-0">
                   {/* Bouton Copier */}
                   <button
                     onClick={() => handleCopyItem(item)}
                     title="Copier cette ligne"
                     className={`p-2 rounded-lg transition ${
                       copiedItem === item
-                        ? darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'
+                        ? darkMode ? 'bg-blue-900 text-white' : 'bg-blue-800 text-white'
                         : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                     }`}
                   >
@@ -1863,7 +1862,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                       onClick={() => handlePasteOnItem(index)}
                       title={`Coller "${copiedItem}" ici`}
                       className={`p-2 rounded-lg transition ${
-                        darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        darkMode ? 'bg-blue-900 hover:bg-blue-950 text-white' : 'bg-blue-800 hover:bg-blue-900 text-white'
                       }`}
                     >
                       <Clipboard size={18} />
@@ -1901,7 +1900,7 @@ function EditGameSection({ darkMode, selectedGame, newGameName, setNewGameName, 
                 onClick={handlePasteAsNewItem}
                 title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
                 className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                  darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  darkMode ? 'bg-blue-900 hover:bg-blue-950 text-white' : 'bg-blue-800 hover:bg-blue-900 text-white'
                 }`}
               >
                 <Clipboard size={18} />
@@ -2016,7 +2015,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                       title="Copier cette ligne"
                       className={`p-2 rounded-lg transition ${
                         copiedItem === item
-                          ? darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'
+                          ? darkMode ? 'bg-blue-900 text-white' : 'bg-blue-800 text-white'
                           : darkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                       }`}
                     >
@@ -2028,7 +2027,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                         onClick={() => handlePasteOnItem(index)}
                         title={`Coller "${copiedItem}" ici`}
                         className={`p-2 rounded-lg transition ${
-                          darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                          darkMode ? 'bg-blue-900 hover:bg-blue-950 text-white' : 'bg-blue-800 hover:bg-blue-900 text-white'
                         }`}
                       >
                         <Clipboard size={18} />
@@ -2064,7 +2063,7 @@ function CreateGameModal({ darkMode, newGameName, setNewGameName, newGameItems, 
                   onClick={handlePasteAsNewItem}
                   title={`Ajouter une nouvelle ligne avec "${copiedItem}"`}
                   className={`w-full py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                    darkMode ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    darkMode ? 'bg-blue-900 hover:bg-blue-950 text-white' : 'bg-blue-800 hover:bg-blue-900 text-white'
                   }`}
                 >
                   <Clipboard size={18} />
