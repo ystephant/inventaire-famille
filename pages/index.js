@@ -1199,6 +1199,8 @@ const resetInventory = async () => {
 
 // Composant SearchGameSection
 function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults, searchResults, selectGame, deleteGame, requestAdminPassword, allGames, showAllGamesList, setShowAllGamesList, openCreateModal, evaluations, deleteEvaluation, deleteAllEvaluations }) {
+  const [sendingEmail, setSendingEmail] = React.useState(false);
+
   const formatDate = (isoString) => {
     const date = new Date(isoString);
     return date.toLocaleDateString('fr-FR', { 
@@ -1208,6 +1210,32 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const sendEmailReport = async () => {
+    const evaluationsWithComments = evaluations.filter(e => e.comment);
+    if (evaluationsWithComments.length === 0) {
+      alert('ℹ️ Aucune évaluation avec commentaire à envoyer.');
+      return;
+    }
+    setSendingEmail(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ evaluations: evaluationsWithComments }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Erreur réseau');
+      }
+      alert(`✅ Email envoyé avec ${evaluationsWithComments.length} évaluation(s) commentée(s) !`);
+    } catch (error) {
+      console.error('Erreur envoi email:', error);
+      alert(`❌ Erreur lors de l'envoi : ${error.message}`);
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   const StarRating = ({ rating }) => {
@@ -1348,17 +1376,32 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
       {/* Historique des évaluations */}
       {evaluations.length > 0 && (
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6`}>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} flex items-center gap-2`}>
               📋 Historique des évaluations
             </h2>
-            <button
-              onClick={deleteAllEvaluations}
-              className="text-red-500 hover:text-red-600 text-sm font-semibold flex items-center gap-1"
-            >
-              <Trash2 size={16} />
-              Tout supprimer
-            </button>
+            <div className="flex items-center gap-3 flex-wrap">
+              {evaluations.some(e => e.comment) && (
+                <button
+                  onClick={sendEmailReport}
+                  disabled={sendingEmail}
+                  className={`text-sm font-semibold flex items-center gap-1 transition ${
+                    sendingEmail
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+                  }`}
+                >
+                  {sendingEmail ? '⏳' : '📧'} {sendingEmail ? 'Envoi...' : 'Envoyer un mail'}
+                </button>
+              )}
+              <button
+                onClick={deleteAllEvaluations}
+                className="text-red-500 hover:text-red-600 text-sm font-semibold flex items-center gap-1"
+              >
+                <Trash2 size={16} />
+                Tout supprimer
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3">
