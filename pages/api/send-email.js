@@ -18,6 +18,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Variable REPORT_EMAIL non configurée dans Vercel' });
   }
 
+  // Supporte plusieurs adresses séparées par des virgules : "a@x.fr,b@y.fr"
+  const destinationEmails = DESTINATION_EMAIL.split(',').map((e) => e.trim()).filter(Boolean);
+
   if (!RESEND_API_KEY) {
     return res.status(500).json({ error: 'Variable RESEND_API_KEY non configurée dans Vercel' });
   }
@@ -61,7 +64,7 @@ export default async function handler(req, res) {
       <div style="font-size:17px;font-weight:700;color:#1C1917;margin-bottom:10px;">🎲 ${e.game_name}</div>
       <div style="margin-bottom:10px;line-height:1;">${starsHtml(e.rating)}</div>
       <div style="font-size:13px;color:#44403C;margin-bottom:5px;">📅 <strong>Vérifié le :</strong> ${formatDate(e.created_at)}</div>
-      <div style="font-size:13px;color:#44403C;margin-bottom:12px;">👤 <strong>Par :</strong> ${e.sender_name}</div>
+      <div style="font-size:13px;color:#44403C;margin-bottom:12px;">📍 <strong>Lieu d'expédition :</strong> ${e.sender_name}</div>
       <div style="
         font-size:14px;color:#1C1917;
         background:rgba(255,255,255,0.55);
@@ -75,12 +78,12 @@ export default async function handler(req, res) {
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background-color:#F3F4F6;">
+<body style="margin:0;padding:0;background-color:#ffffff;">
   <div style="max-width:620px;margin:30px auto;font-family:'Segoe UI',Arial,sans-serif;">
-    <div style="background:linear-gradient(135deg,#EA580C 0%,#C2410C 100%);border-radius:16px 16px 0 0;padding:28px 32px;text-align:center;">
+    <div style="background:#ffffff;border-radius:16px 16px 0 0;border:1px solid #E5E7EB;border-bottom:none;padding:28px 32px;text-align:center;">
       <div style="font-size:36px;margin-bottom:8px;">🎲</div>
-      <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700;">Rapport d'évaluations</h1>
-      <p style="color:#FED7AA;margin:8px 0 0;font-size:14px;">Inventaire Famille</p>
+      <h1 style="color:#111827;margin:0;font-size:22px;font-weight:700;">Rapport d'évaluations</h1>
+      <p style="color:#6B7280;margin:8px 0 0;font-size:14px;">Inventaire Famille</p>
     </div>
     <div style="background:#fff;padding:32px;border-left:1px solid #E5E7EB;border-right:1px solid #E5E7EB;">
       <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 24px;">
@@ -108,7 +111,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         from: 'Inventaire Jeux <onboarding@resend.dev>',
-        to: [DESTINATION_EMAIL],
+        to: destinationEmails,
         subject: `🎲 Évaluations commentées – ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`,
         html,
       }),
