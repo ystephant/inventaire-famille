@@ -1200,6 +1200,12 @@ const resetInventory = async () => {
 // Composant SearchGameSection
 function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults, searchResults, selectGame, deleteGame, requestAdminPassword, allGames, showAllGamesList, setShowAllGamesList, openCreateModal, evaluations, deleteEvaluation, deleteAllEvaluations }) {
   const [sendingEmail, setSendingEmail] = React.useState(false);
+  const [emailToast, setEmailToast] = React.useState(null); // { type: 'success'|'error'|'info', message: '' }
+
+  const showToast = (type, message) => {
+    setEmailToast({ type, message });
+    setTimeout(() => setEmailToast(null), 4000);
+  };
 
   const formatDate = (isoString) => {
     const date = new Date(isoString);
@@ -1215,7 +1221,7 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
   const sendEmailReport = async () => {
     const evaluationsWithComments = evaluations.filter(e => e.comment);
     if (evaluationsWithComments.length === 0) {
-      alert('ℹ️ Aucune évaluation avec commentaire à envoyer.');
+      showToast('info', 'Aucune évaluation avec commentaire à envoyer.');
       return;
     }
     setSendingEmail(true);
@@ -1229,10 +1235,10 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
         const err = await response.json();
         throw new Error(err.error || 'Erreur réseau');
       }
-      alert(`✅ Email envoyé avec ${evaluationsWithComments.length} évaluation(s) commentée(s) !`);
+      showToast('success', `Email envoyé avec ${evaluationsWithComments.length} évaluation${evaluationsWithComments.length > 1 ? 's' : ''} commentée${evaluationsWithComments.length > 1 ? 's' : ''} !`);
     } catch (error) {
       console.error('Erreur envoi email:', error);
-      alert(`❌ Erreur lors de l'envoi : ${error.message}`);
+      showToast('error', `Erreur lors de l'envoi : ${error.message}`);
     } finally {
       setSendingEmail(false);
     }
@@ -1252,6 +1258,25 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
 
   return (
     <div className="space-y-6">
+
+      {/* Toast email */}
+      {emailToast && (
+        <div className={`fixed bottom-6 left-4 right-4 z-50 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-max`}>
+          <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl text-sm font-semibold ${
+            emailToast.type === 'success'
+              ? 'bg-orange-600 text-white'
+              : emailToast.type === 'error'
+                ? 'bg-red-600 text-white'
+                : darkMode ? 'bg-gray-700 text-gray-100 border border-gray-600' : 'bg-white text-gray-800 border border-gray-200'
+          }`}>
+            <span className="text-lg">
+              {emailToast.type === 'success' ? '📧' : emailToast.type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            {emailToast.message}
+          </div>
+        </div>
+      )}
+
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6`}>
       <h2 className={`text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-4 flex items-center gap-2`}>
         <Search size={24} className="text-orange-600" />
