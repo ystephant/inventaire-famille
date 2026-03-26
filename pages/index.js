@@ -87,6 +87,7 @@ export default function InventaireJeux() {
   const [editingDetails, setEditingDetails] = useState(false);
   const [currentDetailPhotos, setCurrentDetailPhotos] = useState([]);
   const detailImageInputRef = useRef(null);
+  const detailPdfInputRef = useRef(null);
   const [currentEditingPhotoId, setCurrentEditingPhotoId] = useState(null);
   
   const [syncStatus, setSyncStatus] = useState('');
@@ -122,6 +123,23 @@ export default function InventaireJeux() {
     );
 
     if (!response.ok) throw new Error(`Cloudinary upload failed: ${response.status}`);
+    const data = await response.json();
+    return { url: data.secure_url, publicId: data.public_id };
+  };
+
+  // 📄 Upload PDF vers Cloudinary (raw)
+  const uploadPdfToCloudinary = async (file, folder = 'boardgames') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', folder);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`,
+      { method: 'POST', body: formData }
+    );
+
+    if (!response.ok) throw new Error(`Cloudinary PDF upload failed: ${response.status}`);
     const data = await response.json();
     return { url: data.secure_url, publicId: data.public_id };
   };
@@ -414,6 +432,56 @@ const getAggregatedItems = () => {
     }
   };
 
+  // 📄 Upload PDF
+  const handleDetailPdfCapture = async (e) => {
+    const files = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
+    if (files.length === 0) return;
+
+    if (CLOUDINARY_CLOUD_NAME === 'VOTRE_CLOUD_NAME') {
+      alert('⚠️ Veuillez configurer Cloudinary !');
+      return;
+    }
+
+    setUploadingPhotos(true);
+    setUploadProgress(0);
+
+    try {
+      let completed = 0;
+      const uploadPromises = files.map(async (file, index) => {
+        if (file.size > 20 * 1024 * 1024) return null;
+        try {
+          const folder = selectedGame
+            ? `boardgames/${selectedGame.id}/${detailedView?.itemIndex || 0}`
+            : 'boardgames/demo';
+          const result = await uploadPdfToCloudinary(file, folder);
+          completed++;
+          setUploadProgress(Math.round((completed / files.length) * 100));
+          return {
+            id: `pdf_${Date.now()}_${index}`,
+            name: file.name.replace(/\.pdf$/i, ''),
+            image: result.url,
+            cloudinaryPublicId: result.publicId,
+            type: 'pdf'
+          };
+        } catch (error) {
+          console.error(`Erreur upload PDF ${file.name}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const newPdfs = results.filter(p => p !== null);
+      setCurrentDetailPhotos(prev => [...prev, ...newPdfs]);
+      alert(`✅ ${newPdfs.length} livret(s) PDF uploadé(s) !`);
+    } catch (error) {
+      console.error('Erreur upload PDF:', error);
+      alert('❌ Erreur lors de l\'upload PDF');
+    } finally {
+      setUploadingPhotos(false);
+      setUploadProgress(0);
+    }
+  };
+
   // Drag & Drop handlers
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -437,10 +505,17 @@ const getAggregatedItems = () => {
     e.stopPropagation();
     setIsDragging(false);
     if (!editingDetails) return;
-    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-    if (files.length === 0) return;
-    const fakeEvent = { target: { files } };
-    await handleDetailPhotoCapture(fakeEvent);
+    const allFiles = Array.from(e.dataTransfer.files);
+    const imageFiles = allFiles.filter(file => file.type.startsWith('image/'));
+    const pdfFiles = allFiles.filter(file => file.type === 'application/pdf');
+    if (imageFiles.length > 0) {
+      const fakeEvent = { target: { files: imageFiles } };
+      await handleDetailPhotoCapture(fakeEvent);
+    }
+    if (pdfFiles.length > 0) {
+      const fakeEvent = { target: { files: pdfFiles } };
+      await handleDetailPdfCapture(fakeEvent);
+    }
   };
 
   const selectGame = (game) => {
@@ -624,7 +699,12 @@ const resetInventory = async () => {
 
   const getDetailPhotoCount = (itemIndex) => {
     const photos = itemDetails[itemIndex] || [];
-    return photos.filter(p => p.image).length;
+    return photos.filter(p => p.image && p.type !== 'pdf').length;
+  };
+
+  const getDetailPdfCount = (itemIndex) => {
+    const photos = itemDetails[itemIndex] || [];
+    return photos.filter(p => p.type === 'pdf').length;
   };
 
   // Fonctions pour les modales
@@ -704,6 +784,10 @@ const resetInventory = async () => {
   const addDetailPhoto = () => {
     setCurrentEditingPhotoId(null);
     detailImageInputRef.current?.click();
+  };
+
+  const addDetailPdf = () => {
+    detailPdfInputRef.current?.click();
   };
 
   const openDetailPhotoCapture = (photoId) => {
@@ -1082,6 +1166,7 @@ const resetInventory = async () => {
             toggleItem={toggleItem}
             itemDetails={itemDetails}
             getDetailPhotoCount={getDetailPhotoCount}
+            getDetailPdfCount={getDetailPdfCount}
             openDetailedView={openDetailedView}
             supabase={supabase}
             setSyncStatus={setSyncStatus}
@@ -1131,11 +1216,14 @@ const resetInventory = async () => {
             saveDetailedView={saveDetailedView}
             cancelEditingDetails={cancelEditingDetails}
             detailImageInputRef={detailImageInputRef}
+            detailPdfInputRef={detailPdfInputRef}
             handleDetailPhotoCapture={handleDetailPhotoCapture}
+            handleDetailPdfCapture={handleDetailPdfCapture}
             openDetailPhotoCapture={openDetailPhotoCapture}
             removeDetailPhoto={removeDetailPhoto}
             updateDetailPhotoName={updateDetailPhotoName}
             addDetailPhoto={addDetailPhoto}
+            addDetailPdf={addDetailPdf}
             checkedItems={checkedItems}
             toggleDetailPhoto={toggleDetailPhoto}
             isDragging={isDragging}
@@ -1480,7 +1568,7 @@ function SearchGameSection({ darkMode, searchQuery, setSearchQuery, showResults,
 }
 
 // Composant GameInventorySection avec AGRÉGATION
-function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGame, requestAdminPassword, getProgress, resetInventory, getAggregatedItems, getAggregatedProgress, checkedItems, toggleItem, itemDetails, getDetailPhotoCount, openDetailedView, supabase, setSyncStatus, toggleAggregatedType, gameRating, setGameRating, senderName, setSenderName, additionalComment, setAdditionalComment, saveEvaluation, sortOrder, setSortOrder, getSortedItems }) {
+function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGame, requestAdminPassword, getProgress, resetInventory, getAggregatedItems, getAggregatedProgress, checkedItems, toggleItem, itemDetails, getDetailPhotoCount, getDetailPdfCount, openDetailedView, supabase, setSyncStatus, toggleAggregatedType, gameRating, setGameRating, senderName, setSenderName, additionalComment, setAdditionalComment, saveEvaluation, sortOrder, setSortOrder, getSortedItems }) {
   const StarSelector = ({ rating, setRating }) => {
     return (
       <div className="flex gap-1">
@@ -1633,6 +1721,9 @@ function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGam
         <div className="space-y-2">
           {getSortedItems().map(({ item, index }) => {
             const photoCount = getDetailPhotoCount(index);
+            const pdfCount = getDetailPdfCount(index);
+            const onlyPdf = pdfCount > 0 && photoCount === 0;
+            const hasContent = photoCount > 0 || pdfCount > 0;
             return (
               <div key={index} className="flex items-center gap-2">
                 <button
@@ -1640,9 +1731,19 @@ function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGam
                   className={`p-2 rounded-lg transition ${
                     photoCount > 0
                       ? darkMode ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-500 hover:bg-purple-600 text-white'
-                      : darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
+                      : onlyPdf
+                        ? darkMode ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
+                        : darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-400' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
                   }`}
-                  title={photoCount > 0 ? `${photoCount} photo${photoCount > 1 ? 's' : ''}` : 'Ajouter des photos'}
+                  title={
+                    photoCount > 0 && pdfCount > 0
+                      ? `${photoCount} photo${photoCount > 1 ? 's' : ''} · ${pdfCount} PDF`
+                      : photoCount > 0
+                        ? `${photoCount} photo${photoCount > 1 ? 's' : ''}`
+                        : onlyPdf
+                          ? `${pdfCount} PDF`
+                          : 'Ajouter des photos'
+                  }
                 >
                   <Grid size={16} />
                 </button>
@@ -1668,9 +1769,18 @@ function GameInventorySection({ darkMode, selectedGame, startEditMode, deleteGam
                     }`}>
                       {item}
                     </span>
-                    {photoCount > 0 && (
-                      <div className={`text-xs mt-1 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                        📸 {photoCount} photo{photoCount > 1 ? 's' : ''}
+                    {hasContent && (
+                      <div className="flex gap-2 mt-1 flex-wrap">
+                        {photoCount > 0 && (
+                          <span className={`text-xs ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                            📸 {photoCount} photo{photoCount > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {pdfCount > 0 && (
+                          <span className={`text-xs ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
+                            📄 {pdfCount} PDF
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -2313,8 +2423,8 @@ function AdminPasswordModal({ darkMode, onConfirm, onClose }) {
 function DetailedViewComponent({ 
   detailedView, currentDetailPhotos, editingDetails, darkMode,
   closeDetailedView, startEditingDetails, saveDetailedView, cancelEditingDetails,
-  detailImageInputRef, handleDetailPhotoCapture, openDetailPhotoCapture,
-  removeDetailPhoto, updateDetailPhotoName, addDetailPhoto,
+  detailImageInputRef, detailPdfInputRef, handleDetailPhotoCapture, handleDetailPdfCapture, openDetailPhotoCapture,
+  removeDetailPhoto, updateDetailPhotoName, addDetailPhoto, addDetailPdf,
   checkedItems, toggleDetailPhoto,
   isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop,
   uploadingPhotos, uploadProgress, getOptimizedImage,
@@ -2327,7 +2437,7 @@ function DetailedViewComponent({
 
   const paginatedPhotos = React.useMemo(() => {
     return currentDetailPhotos
-      .filter(p => p.image)
+      .filter(p => p.image && p.type !== 'pdf')
       .slice((currentPage - 1) * PHOTOS_PER_PAGE, currentPage * PHOTOS_PER_PAGE);
   }, [currentDetailPhotos, currentPage]);
 
@@ -2350,7 +2460,8 @@ function DetailedViewComponent({
                 {detailedView.itemName}
               </h2>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {currentDetailPhotos.filter(p => p.image).length} photo{currentDetailPhotos.filter(p => p.image).length > 1 ? 's' : ''}
+                {currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length} photo{currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length > 1 ? 's' : ''}
+                {currentDetailPhotos.filter(p => p.type === 'pdf').length > 0 && ` · ${currentDetailPhotos.filter(p => p.type === 'pdf').length} livret${currentDetailPhotos.filter(p => p.type === 'pdf').length > 1 ? 's' : ''} PDF`}
               </p>
             </div>
           </div>
@@ -2413,11 +2524,11 @@ function DetailedViewComponent({
                     : darkMode ? 'text-blue-300' : 'text-blue-800'
                 }`}>
                   {isDragging 
-                    ? '📸 Déposez vos photos ici !' 
-                    : '⚡ Glissez-déposez vos photos ici'}
+                    ? '📸 Déposez vos photos ou PDFs ici !' 
+                    : '⚡ Glissez-déposez vos photos ou PDFs ici'}
                 </p>
                 <p className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  ou cliquez sur le bouton ci-dessous
+                  ou cliquez sur les boutons ci-dessous
                 </p>
               </div>
             </div>
@@ -2447,9 +2558,48 @@ function DetailedViewComponent({
               className="hidden"
             />
 
+            <input
+              ref={detailPdfInputRef}
+              type="file"
+              accept="application/pdf"
+              multiple
+              onChange={handleDetailPdfCapture}
+              className="hidden"
+            />
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
               {currentDetailPhotos.map((photo) => (
                 <div key={photo.id} className={`border-2 rounded-lg overflow-hidden ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                  {photo.type === 'pdf' ? (
+                    <div className="relative">
+                      <a
+                        href={photo.image}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex' }}
+                        className={`aspect-square flex flex-col items-center justify-center gap-2 cursor-pointer transition ${
+                          darkMode ? 'bg-red-900 bg-opacity-30 hover:bg-opacity-50' : 'bg-red-50 hover:bg-red-100'
+                        }`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="9" y1="13" x2="15" y2="13"/>
+                          <line x1="9" y1="17" x2="15" y2="17"/>
+                          <line x1="9" y1="9" x2="11" y2="9"/>
+                        </svg>
+                        <span className={`text-xs font-semibold ${darkMode ? 'text-red-300' : 'text-red-600'}`}>Ouvrir le PDF</span>
+                      </a>
+                      <div className="absolute top-2 right-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeDetailPhoto(photo.id); }}
+                          className="bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                   <div 
                     onClick={() => openDetailPhotoCapture(photo.id)}
                     className={`aspect-square cursor-pointer relative ${
@@ -2468,10 +2618,7 @@ function DetailedViewComponent({
                         />
                         <div className="absolute bottom-2 left-2 flex gap-1">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              rotatePhoto(photo.id, 'left');
-                            }}
+                            onClick={(e) => { e.stopPropagation(); rotatePhoto(photo.id, 'left'); }}
                             className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition shadow-lg"
                             title="Pivoter à gauche"
                           >
@@ -2480,10 +2627,7 @@ function DetailedViewComponent({
                             </svg>
                           </button>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              rotatePhoto(photo.id, 'right');
-                            }}
+                            onClick={(e) => { e.stopPropagation(); rotatePhoto(photo.id, 'right'); }}
                             className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition shadow-lg"
                             title="Pivoter à droite"
                           >
@@ -2503,21 +2647,19 @@ function DetailedViewComponent({
                     )}
                     <div className="absolute top-2 right-2">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeDetailPhoto(photo.id);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); removeDetailPhoto(photo.id); }}
                         className="bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition"
                       >
                         <X size={16} />
                       </button>
                     </div>
                   </div>
+                  )}
                   <input
                     type="text"
                     value={photo.name}
                     onChange={(e) => updateDetailPhotoName(photo.id, e.target.value)}
-                    placeholder="Nom (optionnel)"
+                    placeholder={photo.type === 'pdf' ? 'Nom du livret' : 'Nom (optionnel)'}
                     className={`w-full px-2 py-2 text-xs focus:outline-none ${
                       darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'
                     }`}
@@ -2526,13 +2668,22 @@ function DetailedViewComponent({
               ))}
             </div>
 
-            <button
-              onClick={addDetailPhoto}
-              className="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2"
-            >
-              <Plus size={20} />
-              Ajouter des photos
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={addDetailPhoto}
+                className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2"
+              >
+                <Plus size={20} />
+                Ajouter des photos
+              </button>
+              <button
+                onClick={addDetailPdf}
+                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2"
+              >
+                <Plus size={20} />
+                Ajouter un livret PDF
+              </button>
+            </div>
           </>
         ) : (
           <>
@@ -2540,7 +2691,7 @@ function DetailedViewComponent({
               <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 <Grid size={48} className="mx-auto mb-4 opacity-50" />
                 <p className="text-lg mb-2">Aucune photo pour cet élément</p>
-                <p className="text-sm">Cliquez sur "Gérer les photos" pour ajouter des photos</p>
+                <p className="text-sm">Cliquez sur "Gérer les photos" pour ajouter des photos ou livrets PDF</p>
               </div>
             ) : (
               <div>
@@ -2549,6 +2700,34 @@ function DetailedViewComponent({
                     💡 Cliquez sur le bouton zoom pour voir une photo en plein écran
                   </p>
                 </div>
+
+                {/* PDFs en haut */}
+                {currentDetailPhotos.filter(p => p.type === 'pdf').length > 0 && (
+                  <div className="mb-4">
+                    <p className={`text-xs font-semibold mb-2 ${darkMode ? 'text-red-300' : 'text-red-600'}`}>📄 Livrets de règles</p>
+                    <div className="flex flex-wrap gap-3">
+                      {currentDetailPhotos.filter(p => p.type === 'pdf').map(pdf => (
+                        <a
+                          key={pdf.id}
+                          href={pdf.image}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 font-medium text-sm transition ${
+                            darkMode
+                              ? 'bg-red-900 bg-opacity-30 border-red-700 text-red-300 hover:bg-opacity-50'
+                              : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+                          }`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                          </svg>
+                          {pdf.name || 'Livret de règles'}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {paginatedPhotos.map((photo) => {
@@ -2611,7 +2790,7 @@ function DetailedViewComponent({
                   })}
 </div>
                 
-                {currentDetailPhotos.filter(p => p.image).length > PHOTOS_PER_PAGE && (
+                {currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length > PHOTOS_PER_PAGE && (
                   <div className="flex items-center justify-center gap-2 mt-6">
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -2628,14 +2807,14 @@ function DetailedViewComponent({
                     </button>
                     
                     <span className={`px-4 py-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'} font-semibold`}>
-                      Page {currentPage} / {Math.ceil(currentDetailPhotos.filter(p => p.image).length / PHOTOS_PER_PAGE)}
+                      Page {currentPage} / {Math.ceil(currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length / PHOTOS_PER_PAGE)}
                     </span>
                     
                     <button
-                      onClick={() => setCurrentPage(p => Math.min(Math.ceil(currentDetailPhotos.filter(p => p.image).length / PHOTOS_PER_PAGE), p + 1))}
-                      disabled={currentPage >= Math.ceil(currentDetailPhotos.filter(p => p.image).length / PHOTOS_PER_PAGE)}
+                      onClick={() => setCurrentPage(p => Math.min(Math.ceil(currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length / PHOTOS_PER_PAGE), p + 1))}
+                      disabled={currentPage >= Math.ceil(currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length / PHOTOS_PER_PAGE)}
                       className={`px-4 py-2 rounded-lg font-semibold transition ${
-                        currentPage >= Math.ceil(currentDetailPhotos.filter(p => p.image).length / PHOTOS_PER_PAGE)
+                        currentPage >= Math.ceil(currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length / PHOTOS_PER_PAGE)
                           ? 'opacity-30 cursor-not-allowed'
                           : darkMode
                             ? 'bg-purple-600 text-white hover:bg-purple-700'
