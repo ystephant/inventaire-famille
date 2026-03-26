@@ -1221,6 +1221,7 @@ const resetInventory = async () => {
             handleDetailPdfCapture={handleDetailPdfCapture}
             openDetailPhotoCapture={openDetailPhotoCapture}
             removeDetailPhoto={removeDetailPhoto}
+            requestAdminPassword={requestAdminPassword}
             updateDetailPhotoName={updateDetailPhotoName}
             addDetailPhoto={addDetailPhoto}
             addDetailPdf={addDetailPdf}
@@ -2424,7 +2425,7 @@ function DetailedViewComponent({
   detailedView, currentDetailPhotos, editingDetails, darkMode,
   closeDetailedView, startEditingDetails, saveDetailedView, cancelEditingDetails,
   detailImageInputRef, detailPdfInputRef, handleDetailPhotoCapture, handleDetailPdfCapture, openDetailPhotoCapture,
-  removeDetailPhoto, updateDetailPhotoName, addDetailPhoto, addDetailPdf,
+  removeDetailPhoto, requestAdminPassword, updateDetailPhotoName, addDetailPhoto, addDetailPdf,
   checkedItems, toggleDetailPhoto,
   isDragging, handleDragEnter, handleDragLeave, handleDragOver, handleDrop,
   uploadingPhotos, uploadProgress, getOptimizedImage,
@@ -2592,7 +2593,7 @@ function DetailedViewComponent({
                       </a>
                       <div className="absolute top-2 right-2">
                         <button
-                          onClick={(e) => { e.stopPropagation(); removeDetailPhoto(photo.id); }}
+                          onClick={(e) => { e.stopPropagation(); requestAdminPassword(() => removeDetailPhoto(photo.id)); }}
                           className="bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition"
                         >
                           <X size={16} />
@@ -2647,7 +2648,7 @@ function DetailedViewComponent({
                     )}
                     <div className="absolute top-2 right-2">
                       <button
-                        onClick={(e) => { e.stopPropagation(); removeDetailPhoto(photo.id); }}
+                        onClick={(e) => { e.stopPropagation(); requestAdminPassword(() => removeDetailPhoto(photo.id)); }}
                         className="bg-red-600 text-white p-1 rounded-full hover:bg-red-700 transition"
                       >
                         <X size={16} />
