@@ -105,6 +105,7 @@ export default function InventaireJeux() {
   const [adminPasswordModal, setAdminPasswordModal] = useState({ show: false, onConfirm: null });
   const [saveSuccessToast, setSaveSuccessToast] = useState('');
   const [resetConfirmModal, setResetConfirmModal] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   const requestAdminPassword = (onConfirm) => {
     setAdminPasswordModal({ show: true, onConfirm });
@@ -258,6 +259,15 @@ export default function InventaireJeux() {
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
+
+  // 3️⃣ Détection de l'inventaire complet → popin de félicitation
+  useEffect(() => {
+    if (!selectedGame || Object.keys(checkedItems).length === 0) return;
+    const progress = getProgress();
+    if (progress === 100) {
+      setShowCompletionModal(true);
+    }
+  }, [checkedItems, selectedGame, itemDetails]);
 
   useEffect(() => {
     if (searchQuery.length > 1) {
@@ -1071,9 +1081,9 @@ const resetInventory = async () => {
 
         {/* 🆕 HEADER MODIFIÉ avec bouton "Revenir à la recherche" */}
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6 mb-6`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <div className="bg-orange-600 p-3 rounded-xl">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3 flex-1 flex-wrap">
+              <div className="bg-orange-600 p-3 rounded-xl flex-shrink-0">
                 <Dices size={28} color="white" />
               </div>
               <div className="flex-1">
@@ -1083,7 +1093,7 @@ const resetInventory = async () => {
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Et si on comptait les jeux en famille ?</p>
                   </div>
                   {selectedGame && !editMode && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {detailedView && (
                         <button
                           onClick={changeGame}
@@ -1121,7 +1131,7 @@ const resetInventory = async () => {
 
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-3 rounded-xl transition-all ml-4 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+              className={`p-3 rounded-xl transition-all ml-4 flex-shrink-0 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
               title={darkMode ? 'Mode clair' : 'Mode sombre'}
             >
               {darkMode ? '☀️' : '🌙'}
@@ -1262,6 +1272,40 @@ const resetInventory = async () => {
             onConfirm={adminPasswordModal.onConfirm}
             onClose={() => setAdminPasswordModal({ show: false, onConfirm: null })}
           />
+        )}
+
+        {/* Popin 100% complet */}
+        {showCompletionModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'} rounded-2xl shadow-2xl p-6 max-w-sm w-full border-4 border-orange-500`}>
+              <div className="text-center mb-4">
+                <div className="text-5xl mb-3">🎉</div>
+                <h3 className="text-xl font-bold leading-snug mb-2">
+                  Hey ! Bravo !
+                </h3>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Visiblement tu as compté l'ensemble des éléments de ce jeu. Veux-tu réinitialiser l'inventaire maintenant ?
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCompletionModal(false)}
+                  className={`flex-1 py-3 rounded-xl font-bold transition text-lg ${darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  Non
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCompletionModal(false);
+                    confirmResetInventory();
+                  }}
+                  className="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition text-lg"
+                >
+                  Oui
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Modal confirmation réinitialisation */}
@@ -2447,18 +2491,18 @@ function DetailedViewComponent({
   return (
     <>
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-xl p-6`}>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={closeDetailedView}
-              className={`p-2 rounded-lg transition ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'}`}
+              className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'}`}
             >
               <ArrowLeft size={24} />
             </button>
-            <div>
-              <h2 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} flex items-center gap-2`}>
-                <Grid size={24} className="text-purple-500" />
-                {detailedView.itemName}
+            <div className="min-w-0">
+              <h2 className={`text-xl sm:text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'} flex items-center gap-2 truncate`}>
+                <Grid size={22} className="text-purple-500 flex-shrink-0" />
+                <span className="truncate">{detailedView.itemName}</span>
               </h2>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 {currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length} photo{currentDetailPhotos.filter(p => p.image && p.type !== 'pdf').length > 1 ? 's' : ''}
@@ -2466,19 +2510,19 @@ function DetailedViewComponent({
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             {editingDetails ? (
               <>
                 <button
                   onClick={saveDetailedView}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2"
+                  className="bg-green-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-1.5 text-sm sm:text-base sm:px-4"
                 >
                   <Check size={18} />
                   Sauvegarder
                 </button>
                 <button
                   onClick={cancelEditingDetails}
-                  className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
+                  className={`px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 text-sm sm:text-base sm:px-4 ${
                     darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -2489,7 +2533,7 @@ function DetailedViewComponent({
             ) : (
               <button
                 onClick={startEditingDetails}
-                className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
+                className={`px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 text-sm sm:text-base sm:px-4 ${
                   darkMode ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-500 text-white hover:bg-purple-600'
                 }`}
               >
@@ -2669,7 +2713,7 @@ function DetailedViewComponent({
               ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={addDetailPhoto}
                 className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2"
